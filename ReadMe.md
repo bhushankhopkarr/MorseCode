@@ -1,7 +1,7 @@
 # Morse Code Translator
 
 ## Description
-The Morse Code Translator is a Java-based GUI application that allows users to convert text to Morse code and vice versa. The application provides a simple and intuitive interface for translating between these two formats.
+The Morse Code Translator is a Java-based GUI application that allows users to convert text to Morse code. The application provides a simple and intuitive interface for translating between these two formats.
 
 ## Installation
 To set up the project locally, follow these steps:
