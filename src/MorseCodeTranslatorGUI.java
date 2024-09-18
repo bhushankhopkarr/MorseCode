@@ -83,14 +83,14 @@ public class MorseCodeTranslatorGUI extends JFrame {
         morseCodeArea.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         // creates a scroll bar for the morse code text area
-        JScrollPane morseCodeArea = new JScrollPane(textInputArea);
-        morseCodeArea.setBounds(20, 132, 484, 236);
-
+        JScrollPane morseCodeScroll = new JScrollPane(morseCodeArea);
+        morseCodeScroll.setBounds(20, 430, 484, 236);
 
         //add to GUI 
         add(titleLabel);
         add(textInputLabel);
         add(textInputScroll);
         add(morseCodeInputLabel);
+        add(morseCodeScroll);
     }
 }
