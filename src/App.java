@@ -12,7 +12,7 @@ public class App {
                 }
             });
         } catch (Exception e) {
-            System.err.println("An error occurred while launching the application: " + e.getMessage());
+            System.err.println("An Error Occurred: " + e.getMessage());
         }
     }
 }
