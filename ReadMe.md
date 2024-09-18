@@ -20,7 +20,7 @@ To set up the project locally, follow these steps:
     ```
 4. **Run the application**:
     ```sh
-    java -cp bin MorseCodeTranslatorGUI
+    java -cp bin App
     ```
 
 ## Usage
