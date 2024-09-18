@@ -1,22 +1,13 @@
-// this class will handle the logic of the MorseCode application
-
+import javax.sound.sampled.*;
 import java.util.HashMap;
 
 public class MorseCodeController {
-    /*
-        Will be using HashMap to store the Morse code values.
-        A HashMap is a data structure that stores data in key/value pairs.
-        In this case, we'll use the letter as the key and the corresponding Morse code as value.
-        This way, we can easily retrieve the Morse code value of a letter.
-     */
-    
-    //here we are creating a private HashMap of type "Character" witha value of type "String"
     private HashMap<Character, String> morseCodeMap;
 
-    public MorseCodeController(){
+    public MorseCodeController() {
         morseCodeMap = new HashMap<>();
 
-         // uppercase
+        // uppercase
         morseCodeMap.put('A', ".-");
         morseCodeMap.put('B', "-...");
         morseCodeMap.put('C', "-.-.");
@@ -107,5 +98,57 @@ public class MorseCodeController {
         morseCodeMap.put('@', ".--.-.");
         morseCodeMap.put('=', "-...-");
         morseCodeMap.put('!', "-.-.--");
+    }
+
+    public String translateToMorse(String textToTranslate) {
+        StringBuilder translatedText = new StringBuilder();
+        for (Character letter : textToTranslate.toCharArray()) {
+            // translate the letter and then append to the returning value (to be displayed to the GUI)
+            translatedText.append(morseCodeMap.getOrDefault(letter, "")).append(" ");
+        }
+        return translatedText.toString().trim();
+    }
+
+    public void playSound(String[] morseMessage) throws LineUnavailableException, InterruptedException {
+        AudioFormat audioFormat = new AudioFormat(44100, 16, 1, true, false);
+
+        DataLine.Info dataLineInfo = new DataLine.Info(SourceDataLine.class, audioFormat);
+        SourceDataLine sourceDataLine = (SourceDataLine) AudioSystem.getLine(dataLineInfo);
+        sourceDataLine.open(audioFormat);
+        sourceDataLine.start();
+
+        int dotDuration = 200;
+        int dashDuration = (int) (1.5 * dotDuration);
+        int slashDuration = 2 * dashDuration;
+
+        for (String pattern : morseMessage) {
+            // Play the letter sound
+            for (char c : pattern.toCharArray()) {
+                if (c == '.') {
+                    playBeep(sourceDataLine, dotDuration);
+                    Thread.sleep(dotDuration);
+                } else if (c == '-') {
+                    playBeep(sourceDataLine, dashDuration);
+                    Thread.sleep(dotDuration);
+                } else if (c == '/') {
+                    Thread.sleep(slashDuration);
+                }
+            }
+            // Waits a bit before playing the next sequence
+            Thread.sleep(dotDuration);
+        }
+
+        sourceDataLine.drain();
+        sourceDataLine.stop();
+        sourceDataLine.close();
+    }
+
+    private void playBeep(SourceDataLine line, int duration) {
+        byte[] data = new byte[duration * 44100 / 1000];
+        for (int i = 0; i < data.length; i++) {
+            double angle = i / (44100.0 / 440) * 2.0 * Math.PI;
+            data[i] = (byte) (Math.sin(angle) * 127.0);
+        }
+        line.write(data, 0, data.length);
     }
 }
