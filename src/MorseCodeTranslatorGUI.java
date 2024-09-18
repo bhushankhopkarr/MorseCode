@@ -49,6 +49,9 @@ public class MorseCodeTranslatorGUI extends JFrame {
                 BorderFactory.createEmptyBorder(10, 10, 10, 10)));
         textInputArea.setBackground(Color.decode("#e9c46a"));
         textInputArea.setForeground(Color.decode("#264653"));
+        
+        // Set preferred size for textInputArea
+        textInputArea.setPreferredSize(new Dimension(500, 200)); // Increase size as needed
 
         // Add ScrollPane to TextArea
         JScrollPane inputScroll = new JScrollPane(textInputArea);
