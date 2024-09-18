@@ -1,96 +1,138 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import javax.sound.sampled.LineUnavailableException;
+import java.util.Arrays;
 
-public class MorseCodeTranslatorGUI extends JFrame {
-    //textInputArea - user input (test to be translated)
-    //morseCodeArea - translated text into morse code
+public class MorseCodeTranslatorGUI extends JFrame implements KeyListener {
+    private MorseCodeController morseCodeController;
     private JTextArea textInputArea, morseCodeArea;
+    private JButton translateButton, clearButton;
 
     public MorseCodeTranslatorGUI() {
-        //adding title to the application
         super("Morse Code Translator");
 
-        //sets the layout of the application
-        setSize(new Dimension(540, 760));
-
-        //prevent the application from being resized
+        // Set the size and disable resizing
+        setSize(new Dimension(600, 800));
         setResizable(false);
 
-        // setting the layout of the application to null which allows us to place the components wherever we want
-        setLayout(null);
+        // Use a modern layout manager for better structure
+        setLayout(new BorderLayout(10, 10));
 
-        // exits the application when the close button is clicked
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        // Set the aesthetic background color
+        getContentPane().setBackground(Color.decode("#264653"));
 
-        // setting the background color of the application to black
-        getContentPane().setBackground(Color.BLACK);
-
-        // places the application in the center of the screen
+        // Place the GUI in the center of the screen
         setLocationRelativeTo(null);
 
-        addGuiComponents();
+        morseCodeController = new MorseCodeController();
+
+        // Add the main content
+        add(createMainPanel(), BorderLayout.CENTER);
+
+        // Close operation
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
     }
 
-    private void addGuiComponents() {
-        //title label
-        JLabel titleLabel = new JLabel("Morse Code Translator");
+    private JPanel createMainPanel() {
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BorderLayout(10, 10));
+        mainPanel.setOpaque(false);  // Transparent background to inherit from parent
 
-        // changes the font size for the label and the font weight
-        titleLabel.setFont(new Font("Dialog", Font.BOLD, 32));
-
-        //changes the font color of the label to white
-        titleLabel.setForeground(Color.WHITE);
-
-        // centeres text (relative to its container's width)
-        titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
-
-        // set the x, y position and width and height dimensions
-        // to make sure that the title aligns ti the cnter of the GUI, we made it the same size
-        titleLabel.setBounds(0, 20, 540, 100);
-        
-        // text input field
-        JLabel textInputLabel = new JLabel("Enter text here:");
-        textInputLabel.setFont(new Font("Dialog", Font.BOLD, 16));
-        textInputLabel.setForeground(Color.WHITE);
-        textInputLabel.setBounds(20, 100, 200, 30);
-
+        // Create input area with padding and font changes
         textInputArea = new JTextArea();
-        textInputArea.setFont(new Font("Dialog", Font.PLAIN, 18));
-        
-        // simulates padding of 10px in thr text area
-        textInputArea.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        
-        // makes it so that words wrap to the next line if they exceed the width of the text area
+        textInputArea.setFont(new Font("Arial", Font.PLAIN, 18));
         textInputArea.setLineWrap(true);
-
-        // makes it so that when the words do get wrap, the word doesn't get split off
         textInputArea.setWrapStyleWord(true);
+        textInputArea.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.decode("#2a9d8f"), 2, true),
+                BorderFactory.createEmptyBorder(10, 10, 10, 10)));
+        textInputArea.setBackground(Color.decode("#e9c46a"));
+        textInputArea.setForeground(Color.decode("#264653"));
 
-        // creates a scroll bar for the text area
-        JScrollPane textInputScroll = new JScrollPane(textInputArea);
-        textInputScroll.setBounds(20, 132, 484, 236);
+        // Add ScrollPane to TextArea
+        JScrollPane inputScroll = new JScrollPane(textInputArea);
+        inputScroll.setBorder(BorderFactory.createTitledBorder("Text Input"));
+        mainPanel.add(inputScroll, BorderLayout.NORTH);
 
-        // morse code input
-        JLabel morseCodeInputLabel = new JLabel("Morse Code:");
-        morseCodeInputLabel.setFont(new Font("Dialog", Font.BOLD, 16));
-        morseCodeInputLabel.setForeground(Color.WHITE);
-        morseCodeInputLabel.setBounds(20, 390, 200, 30);
-
+        // Create output (morse code) area
         morseCodeArea = new JTextArea();
-        morseCodeArea.setFont(new Font("Dialog", Font.PLAIN, 18)); 
-        morseCodeArea.setEditable(false);
+        morseCodeArea.setFont(new Font("Monospaced", Font.BOLD, 18));
+        morseCodeArea.setLineWrap(true);
         morseCodeArea.setWrapStyleWord(true);
-        morseCodeArea.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        morseCodeArea.setEditable(false);
+        morseCodeArea.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.decode("#e76f51"), 2, true),
+                BorderFactory.createEmptyBorder(10, 10, 10, 10)));
+        morseCodeArea.setBackground(Color.decode("#f4a261"));
+        morseCodeArea.setForeground(Color.decode("#264653"));
 
-        // creates a scroll bar for the morse code text area
-        JScrollPane morseCodeScroll = new JScrollPane(morseCodeArea);
-        morseCodeScroll.setBounds(20, 430, 484, 236);
+        // Add ScrollPane to Morse Code Area
+        JScrollPane outputScroll = new JScrollPane(morseCodeArea);
+        outputScroll.setBorder(BorderFactory.createTitledBorder("Morse Code Output"));
+        mainPanel.add(outputScroll, BorderLayout.CENTER);
 
-        //add to GUI 
-        add(titleLabel);
-        add(textInputLabel);
-        add(textInputScroll);
-        add(morseCodeInputLabel);
-        add(morseCodeScroll);
+        // Create a panel for buttons
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        buttonPanel.setOpaque(false);
+
+        // Translate Button
+        translateButton = new JButton("Translate");
+        styleButton(translateButton);
+        translateButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String inputText = textInputArea.getText();
+                String morseCode = morseCodeController.translateToMorse(inputText);
+                morseCodeArea.setText(morseCode);
+
+                // Split Morse code by spaces to handle individual letters
+                String[] morseMessage = morseCode.split(" ");
+
+                // Create a new thread to play the sound
+                new Thread(() -> {
+                    try {
+                        morseCodeController.playSound(morseMessage);
+                    } catch (LineUnavailableException | InterruptedException ex) {
+                        ex.printStackTrace(); // Handle exceptions appropriately
+                    }
+                }).start();
+            }
+        });
+        buttonPanel.add(translateButton);
+
+        // Clear Button
+        clearButton = new JButton("Clear");
+        styleButton(clearButton);
+        clearButton.addActionListener(e -> {
+            textInputArea.setText("");
+            morseCodeArea.setText("");
+        });
+        buttonPanel.add(clearButton);
+
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        return mainPanel;
     }
+
+    private void styleButton(JButton button) {
+        button.setBackground(Color.decode("#2a9d8f"));
+        button.setForeground(Color.WHITE);
+        button.setFont(new Font("Arial", Font.BOLD, 16));
+        button.setFocusPainted(false);
+        button.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {}
+
+    @Override
+    public void keyPressed(KeyEvent e) {}
+
+    @Override
+    public void keyReleased(KeyEvent e) {}
 }
