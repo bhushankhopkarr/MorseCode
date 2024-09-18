@@ -5,7 +5,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import javax.sound.sampled.LineUnavailableException;
-import java.util.Arrays;
 
 public class MorseCodeTranslatorGUI extends JFrame implements KeyListener {
     private MorseCodeController morseCodeController;
